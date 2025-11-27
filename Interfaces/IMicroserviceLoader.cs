@@ -1,6 +1,4 @@
-﻿using Microsoft.Extensions.Configuration;
-
-namespace Autofac.ServicesConfigurator.Interfaces;
+﻿namespace Autofac.ServicesConfigurator.Interfaces;
 
 public interface IMicroserviceLoader
 {
@@ -9,5 +7,5 @@ public interface IMicroserviceLoader
     /// </summary>
     /// <param name="builder">The builder.</param>
     /// <param name="configuration">The configuration.</param>
-    void LoadServices(ContainerBuilder builder, IConfiguration configuration);
+    void LoadServices(ContainerBuilder builder, string jsonConfigFilePath);
 }

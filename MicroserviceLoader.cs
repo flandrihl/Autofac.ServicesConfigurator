@@ -1,46 +1,38 @@
 ﻿using Autofac.ServicesConfigurator.Interfaces;
-using Microsoft.Extensions.Configuration;
 using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
 using NLog;
 using System;
-using System.Collections.Generic;
+using System.IO;
 
 namespace Autofac.ServicesConfigurator;
 
 public class MicroserviceLoader(ILogger logger) : IMicroserviceLoader
 {
-    public void LoadServices(ContainerBuilder builder, IConfiguration configuration)
+    public void LoadServices(ContainerBuilder builder, string jsonConfigFileName)
     {
         try
         {
-            var servicesSection = configuration.GetSection("Microservices:Services");
-            var servicesJson = servicesSection.Get<string>();
+            if (string.IsNullOrWhiteSpace(jsonConfigFileName))
+                throw new ArgumentNullException(nameof(jsonConfigFileName));
+            if (!File.Exists(jsonConfigFileName))
+                throw new FileNotFoundException("Fail loading gonfiguration", jsonConfigFileName);
 
-            if (string.IsNullOrEmpty(servicesJson)) return;
+            var jsonString = File.ReadAllText(jsonConfigFileName);
+            var jsonObject = JObject.Parse(jsonString);
+
+            var servicesArray = jsonObject["Microservices"]?["Services"] as JArray;
+            if (servicesArray == null) return;
 
             var settings = new JsonSerializerSettings
             {
-                TypeNameHandling = TypeNameHandling.Auto,
-                Error = (sender, args) =>
-                {
-                    // Обработка ошибок десериализации
-                    logger.Fatal($"Error deserializing: {args.ErrorContext.Error.Message}");
-                    args.ErrorContext.Handled = true;
-                }
+                TypeNameHandling = TypeNameHandling.Auto
             };
-            var services = JsonConvert
-                .DeserializeObject<List<RegisterServiceConfigurator>>(servicesJson, settings) ?? [];
 
-            foreach (var serviceConfig in services)
+            foreach (var item in servicesArray)
             {
-                try
-                {
-                    serviceConfig.LoadService(builder, logger);
-                }
-                catch (Exception ex)
-                {
-                    logger.Fatal($"Error loading service {serviceConfig.Name}: {ex.Message}");
-                }
+                var serviceConfig = item.ToObject<RegisterServiceConfigurator>(JsonSerializer.Create(settings));
+                serviceConfig?.LoadService(builder, logger);
             }
         }
         catch (Exception ex)

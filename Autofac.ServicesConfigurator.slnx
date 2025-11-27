@@ -1,3 +1,5 @@
 <Solution>
+  <Project Path="../ConsoleApp_Test/ConsoleApp_Test.csproj" Id="4d0f2ab1-7dc0-4f5a-8248-677e206dce55" />
+  <Project Path="../TestServiceConfig/TestServiceConfig.csproj" Id="c4059d36-a732-479d-98e8-adb1f98472b9" />
   <Project Path="ServicesConfigurator.Autofac.csproj" />
 </Solution>

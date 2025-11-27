@@ -1,6 +1,5 @@
 ﻿using Autofac.Builder;
 using Autofac.ServicesConfigurator.Interfaces;
-using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using NLog;
 
@@ -42,12 +41,11 @@ public static class DependencyHelper
     /// <param name="builder">The builder.</param>
     /// <param name="configuration">The configuration.</param>
     /// <param name="logger">The logger.</param>
-    public static void LoadWithConfiguration(this ContainerBuilder builder, IConfiguration configuration, ILogger logger)
+    public static void LoadWithConfiguration(this ContainerBuilder builder, ILogger logger, string jsonConfigFilePath = "appsettings.json")
     {
-        builder.RegisterInstance(configuration).As<IConfiguration>();
         builder.RegisterType<MicroserviceLoader>().As<IMicroserviceLoader>();
 
         MicroserviceLoader loader = new(logger);
-        loader.LoadServices(builder, configuration);
+        loader.LoadServices(builder, jsonConfigFilePath);
     }
 }
